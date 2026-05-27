@@ -1,63 +1,64 @@
 ---
 name: mes-workflow-skill
-description: Use this skill when the user asks Codex or AI tools to analyze MES worktime records, calculate processing time, waiting time, Lead Time, machine utilization, abnormal records, KPI dashboards, and scheduling suggestions.
+description: 當使用者要求 Codex 或 AI 工具分析 MES 工時資料、計算加工工時、等待工時、Lead Time、機台利用率、異常資料、KPI 與排程建議時，請使用此 Skill。
 ---
 
-# MES Workflow Skill
+# MES 工時分析 Workflow Skill
 
 ## Purpose
 
-This skill helps Codex produce a reliable MES worktime analysis workflow.
+此 Skill 用於建立一套可重複使用的 MES 工時分析流程。
 
-Use this skill when the task involves:
+適用於以下任務：
 
-- MES worktime analysis
-- Processing time calculation
-- Waiting time analysis
-- Machine utilization analysis
-- Lead Time calculation
-- Abnormal record detection
-- KPI dashboard generation
-- Scheduling suggestions
+- MES 工時分析
+- 加工工時計算
+- 等待工時分析
+- 機台利用率分析
+- Lead Time 計算
+- 異常資料判定
+- KPI 儀表板生成
+- 初步排程建議
 
-Default output language: Traditional Chinese.
+預設輸出語言：繁體中文。
 
-Default audience: manufacturing managers, students, administrators, engineers, or users who need a clear MES worktime analysis report.
-
----
-
-## Core Principles
-
-1. Normalize Start / Pause / Resume / End status.
-2. Separate processing time and waiting time correctly.
-3. Same machine should not generate station waiting time.
-4. Completed work orders must contain an End record.
-5. Abnormal records should not be included in average worktime calculations.
-6. Keep calculations clear and repeatable.
+預設使用對象：
+製造業管理者、學生、工程師、管理人員，以及需要 MES 工時分析報告的使用者。
 
 ---
 
-## Standard Workflow
+# Core Principles
 
-### 1. Read MES Records
-
-Read uploaded MES Excel records.
-
-Supported fields:
-
-- Work Order Number
-- Machine ID
-- Machine Name
-- Operator
-- Action Status
-- Timestamp
-- Processing Hours
+1. 統一 Start / Pause / Resume / End 狀態格式。
+2. 正確區分加工工時與等待工時。
+3. 同機台不應產生站與站等待時間。
+4. 已完成製令單必須包含 End 紀錄。
+5. 異常資料不可納入平均工時計算。
+6. 所有工時計算需保持一致性與可追溯性。
 
 ---
 
-### 2. Normalize Action Status
+# Standard Workflow
 
-Normalize status values:
+## 1. 讀取 MES 資料
+
+讀取 MES Excel 工時紀錄。
+
+支援欄位：
+
+- 製令單號
+- 設備編號
+- 設備名稱
+- 使用者
+- 動作狀態
+- 紀錄時間
+- 工時資料
+
+---
+
+## 2. 正規化動作狀態
+
+統一以下狀態：
 
 - Start
 - Pause
@@ -66,69 +67,67 @@ Normalize status values:
 
 ---
 
-### 3. Calculate Processing Time
+## 3. 計算加工工時
 
-Rules:
+以下情況視為加工工時：
 
 - Start → Pause
 - Start → End
 - Resume → End
 
-All count as processing time.
+---
+
+## 4. 計算等待工時
+
+規則：
+
+- Pause → Resume 視為等待工時
+- 不同機台之間可產生站與站等待時間
+- 同機台不可產生等待時間
 
 ---
 
-### 4. Calculate Waiting Time
+## 5. 判定異常資料
 
-Rules:
+以下資料需排除：
 
-- Pause → Resume = waiting time
-- Different machines may generate station waiting time
-- Same machine should not generate waiting time
+- 空白製令單號
+- 無效時間格式
+- 錯誤狀態順序
+- 負加工工時
+- 重複 Start 狀態
 
----
+以下資料需標記為可疑：
 
-### 5. Detect Abnormal Records
-
-Exclude records if:
-
-- Missing work order number
-- Invalid timestamp
-- Invalid action order
-- Negative worktime
-- Duplicate Start status
-
-Flag suspicious records if:
-
-- CNC processing time > 72 hours
-- Waiting time > 24 hours
+- CNC 加工超過 72 小時
+- 等待工時超過 24 小時
 
 ---
 
-### 6. Generate KPI
+## 6. 產生 KPI 指標
 
-Generate:
+產生：
 
-- Total processing hours
-- Total waiting hours
-- Machine utilization
+- 總加工工時
+- 總等待工時
+- 機台利用率
 - Lead Time
-- Completed work orders
-- Abnormal records
+- 已完成製令單數
+- 異常資料數
 
 ---
 
-### 7. Generate Scheduling Suggestions
+## 7. 產生排程建議
 
-Rules:
+規則：
 
-- Completed orders should not be scheduled
-- In-progress orders keep current machine
-- Prefer machines with best historical performance
+- 已完成製令單不可再次排程
+- 加工中製令單優先維持原機台
+- 優先選擇歷史效率最佳機台
 
 ---
 
-## Report Template
+# Report Template
 
 ```markdown
 # MES 工時分析報告
@@ -170,41 +169,41 @@ Rules:
 
 ---
 
-## Writing Style
+# Writing Style
 
-- Use clear Traditional Chinese
-- Keep paragraphs short
-- Avoid unnecessary technical jargon
-- Prefer exact numbers and timestamps
-- Keep workflow descriptions structured and repeatable
-
----
-
-## Quality Checklist
-
-Before finalizing, verify:
-
-- [ ] Processing time is calculated correctly
-- [ ] Waiting time excludes same-machine operations
-- [ ] Completed work orders contain End records
-- [ ] Abnormal records are excluded
-- [ ] KPI values are generated correctly
-- [ ] Lead Time is calculated correctly
+- 使用清楚的繁體中文
+- 保持段落簡潔
+- 避免過多專業術語
+- 優先使用明確數據與時間
+- 保持流程一致性與可重複性
 
 ---
 
-## Optional Outputs
+# Quality Checklist
 
-If the user asks for specific file formats:
+完成前請確認：
 
-- Markdown report
-- HTML dashboard
-- Excel summary
-- PDF report
+- [ ] 加工工時計算正確
+- [ ] 等待工時未包含同機台
+- [ ] 已完成製令單包含 End 紀錄
+- [ ] 異常資料已排除
+- [ ] KPI 指標正確
+- [ ] Lead Time 計算正確
 
 ---
 
-## Example Prompt for Codex Users
+# Optional Outputs
+
+若使用者要求特定格式，可輸出：
+
+- Markdown 報告
+- HTML 儀表板
+- Excel 彙整表
+- PDF 報告
+
+---
+
+# Example Prompt for Codex Users
 
 ```text
 請使用 mes-workflow-skill，分析 MES 工時資料，計算加工工時、等待工時、Lead Time、機台利用率與異常資料，並輸出 Markdown 工時分析報告。
